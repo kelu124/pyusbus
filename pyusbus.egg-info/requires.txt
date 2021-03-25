@@ -1,4 +1,0 @@
-fx2
-usb
-matplotlib
-numpy
