@@ -7,7 +7,7 @@
 
 The objective for this lib is be able to get images from USB probes easily, under python, in a user-friendly API, getting images in 3 lines of code.
 
-```
+```python
 import pyusbus as usbProbe
 probe = usbProbe.HealsonUP20() 
 frames = probe.getImages(n=50) # should give you a loop of 50 frames
