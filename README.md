@@ -3,10 +3,24 @@
 
 # pyusbus Readme
 
+## Objective
 
+The objective for this lib is be able to get images from USB probes easily, under python, in a user-friendly API, getting images in 3 lines of code.
+
+```
+import pyusbus as usbProbe
+probe = usbProbe.HealsonUP20() 
+frames = probe.getImages(n=50) # should give you a loop of 50 frames
+```
+
+## Result
+
+![](/experiments/images/first.gif)
 
 # General setup
  
+Need to work on the documentation here.
+
 ## Ubuntu goodies
 
 ```
@@ -17,7 +31,7 @@ sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"8613
 
 # Contents
 
-* Experiments contains .. experiments
+* Experiments contains .. experiments.
 * Module contains python API.
 
 
@@ -25,7 +39,7 @@ sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"8613
 
 
 * v0.0.1: Inital release
-  * Initial config.
+  * Initial config. Works for Healson UP20 probe.
 
 # License
 

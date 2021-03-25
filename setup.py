@@ -35,6 +35,5 @@ setup(
     'Programming Language :: Python :: 3.6',
   ],
   zip_safe=False,
-  include_package_data=True, 
-  data_files=[('firmware',['pyusbus/config.json',"README.md"]),],
+  include_package_data=True,
 )
