@@ -9,7 +9,8 @@ import json
 import base64
 import struct
 
-from pyusbus.config_arrays import healson_config
+from pyusbus.confUP20L import healson_config
+from pyusbus.confCONV  import cvx
 
 class HealsonUP20:
 
@@ -244,9 +245,116 @@ class HealsonUP20:
     def checkAddress(self,address): 
         return [x for x in self.BulkOutTwo512(b'\xff'+address)][1:2]
 
+
+class bmvConvex:
+
+
+    def __init__(self):
+        """Configure the FTDI interface. 
+        """ 
+        self.payloads = cvx.copy()
+        for k in self.payloads.keys():
+            self.payloads[k] = base64.b64decode(self.payloads[k][1:-1])          
+
+        dev = usb.core.find(idVendor=0x04B4, idProduct=0x00f1)
+        if not dev: print("No Device")
+
+        c = 0
+        for config in dev:
+            #print('config', c)
+            #print('Interfaces', config.bNumInterfaces)
+            # The device was getting "Err 16 busy" on my ubuntu
+            for i in range(config.bNumInterfaces):
+                if dev.is_kernel_driver_active(i):
+                    dev.detach_kernel_driver(i)
+                print(i)
+            c+=1 
+        dev.reset()
+        try:
+            dev.set_configuration()
+        except:
+            print("Already connected")
+        #print(dev.get_active_configuration())
+        
+
+        cfg = dev.get_active_configuration()
+        intf = cfg[(0,0)]
+
+        self.EPOUT = usb.util.find_descriptor(
+            intf,
+            # match the first OUT endpoint
+            custom_match = \
+            lambda e: \
+                usb.util.endpoint_direction(e.bEndpointAddress) == \
+                usb.util.ENDPOINT_OUT)
+
+        assert self.EPOUT is not None
+        #print(self.EPOUT)
+        # write the data
+        #self.EPOUT.write('te1st')
+
+
+        cfg = dev.get_active_configuration()
+        intf = cfg[(0,0)]
+
+        self.EPIN = usb.util.find_descriptor(
+            intf,
+            # match the first OUT endpoint
+            custom_match = \
+            lambda e: \
+                usb.util.endpoint_direction(e.bEndpointAddress) == \
+                usb.util.ENDPOINT_IN)
+
+        assert self.EPIN is not None
+        #print(" === EPIN ===")
+        #print(self.EPIN) 
+        #print(" === EPOUT ===")
+        #print(self.EPOUT)         
+        self.dev = dev
+
+        self.dev.ctrl_transfer(bmRequestType=0xc3,bRequest=176, wValue=0, wIndex= 0, data_or_wLength=  8)
+        self.dev.ctrl_transfer(bmRequestType=0xc3,bRequest=187, wValue=3, wIndex= 0, data_or_wLength= 32)
+        self.dev.ctrl_transfer(bmRequestType=0xc3,bRequest=187, wValue=3, wIndex=32, data_or_wLength= 32)
+        self.dev.ctrl_transfer(bmRequestType=0xc3,bRequest=187, wValue=3, wIndex=64, data_or_wLength=  8)
+        for k in self.payloads.keys():
+            b = self.EPOUT.write(self.payloads[k]) 
+        self.dev.ctrl_transfer(bmRequestType=0xc3,bRequest=187, wValue=3)
+
+    def read1k(self):
+        i = 0
+        data = []
+        while i < 1000:
+            data.append(self.EPIN.read(4096))
+            i += 1
+        nData = data.copy()
+        for k in range(len(data)):
+            PL = bytes(bytearray(data[k]))
+            nData[k] = np.array( struct.unpack( '<'+str(len(PL)//2)+'h', PL ) )
+        nData = np.array(nData)
+        allData = np.concatenate(nData, axis=None)
+        self.raw = allData
+        return allData
+
+    def createLoop(self):
+        newLine = [x[0] for x in np.argwhere(self.raw == np.amax(self.raw))]
+        cntFrame = [x if self.raw[x-1] == 0 else 0 for x in newLine]
+        cntFrame = [self.raw[x+2] for x in newLine]
+        cntImg = []
+        for k in range(len(cntFrame)-1):
+            if cntFrame[k] != cntFrame[k+1]:
+                cntImg.append(k)
+        newLine[cntImg[0]],cntImg,newLine[cntImg[-1]]
+
+        self.loop = []
+        i = newLine[cntImg[0]]
+        while i < len(self.raw) - 80*3900:
+            self.loop.append(self.raw[i:i+80*3900].reshape((80, 3900)))
+            i += 80*3900
+        return self.loop
+
 if __name__ == "__main__": 
     device = HealsonUP20()
-    print("Connected.\nInit...")
+    print("Connected to UP20.\nInit...")
     device.InitOn()
     print("Initialize series")
     device.InitSeries10()
