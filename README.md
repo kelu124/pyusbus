@@ -25,7 +25,7 @@ You can use the `build.sh` and `install.sh` scripts to prepare your module. Hope
  
 Need to work on the documentation here.
 
-## Ubuntu goodies
+## Ubuntu adjustements
 
 ```
 sudo usermod -a -G uucp $USER
@@ -51,6 +51,8 @@ sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"8613
 * Add the module under pip
 * Improve documentation
 * Explore content of [arrays](/pyusbus/config_arrays.py)
+* Get some images on a phantom
+
 
 # License
 
