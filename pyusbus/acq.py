@@ -12,8 +12,15 @@ import struct
 from pyusbus.confUP20L import healson_config
 from pyusbus.confCONV  import cvx
 
-class HealsonUP20:
+def findProbe():
+    dev = usb.core.find(idVendor=0x04B4, idProduct=0x8613)
+    if dev:
+        return "UP20"
+    if usb.core.find(idVendor=0x04B4, idProduct=0x00f1):
+        return "CONVEX"
+    return "No Device"
 
+class UP20:
 
     def __init__(self):
         """Configure the FTDI interface. 
@@ -121,10 +128,10 @@ class HealsonUP20:
     ## Init facility
         
     def InitOn(self):                # 
-        self.ControlIn()              # Checks name of the probe
+        self.ControlIn()             # Checks name of the probe
         self.InitOneA(b'\x10\x0e')   # 
         self.ControlOut(179,2,0,16)
-        self.ControlIn()              # Checks name of the probe
+        self.ControlIn()             # Checks name of the probe
         self.BulkOutTwo(b'\xff\x06') # 113 to 119
         
     def InitSeries10(self):               
@@ -171,9 +178,6 @@ class HealsonUP20:
         self.BulkOutTwo(b'\x10\x08')         # Array 8, 512 elements --> set also via the TGC when programming
         self.BulkOutLarge(self.payloads["373"])   # Values match the dTGC values, up to a facteur 16
         
-        #BulkOutTwo(device,b'\x10\x08')         # Array 8, 512 elements
-        #BulkOutLarge(device,payloads["393"])   # Contents are the same as previous payload
-
         
     def InitRegisters(self) :
 
@@ -221,14 +225,14 @@ class HealsonUP20:
         self.ControlOut(179,0,0,16) # Seems to start: without it, no acqs
 
     def getImages(self,n=1):
-        IMG = self.DLImgs(n)
+        IMG = self.DLImgs(n+1)
         NPts =np.shape(IMG)[0]*np.shape(IMG)[1]
         IMG = np.array( IMG, dtype=np.int )
         IMG = IMG.reshape((NPts//160, 160))
         images = []
         for k in range(n):
             images.append(IMG[512*k:512*(k+1)] )
-        return images
+        return images[1:]
 
     def DLImgs(self,n=1):
         IMG = []
@@ -243,15 +247,19 @@ class HealsonUP20:
 
     ## Facility 
     def checkAddress(self,address): 
-        return [x for x in self.BulkOutTwo512(b'\xff'+address)][1:2]
+        return self.checkAddressFull(address)[1:2]
+    def checkAddressFull(self,address): 
+        return [x for x in self.BulkOutTwo512(b'\xff'+address)]
 
-
-class bmvConvex:
-
+class Convex:
 
     def __init__(self):
         """Configure the FTDI interface. 
         """ 
+
+        self.nL = 80   #np lines per frame
+        self.nP = 3900 #nb pts per line
+
         self.payloads = cvx.copy()
         for k in self.payloads.keys():
             self.payloads[k] = base64.b64decode(self.payloads[k][1:-1])          
@@ -260,9 +268,7 @@ class bmvConvex:
         if not dev: print("No Device")
 
         c = 0
-        for config in dev:
-            #print('config', c)
-            #print('Interfaces', config.bNumInterfaces)
+        for config in dev: 
             # The device was getting "Err 16 busy" on my ubuntu
             for i in range(config.bNumInterfaces):
                 if dev.is_kernel_driver_active(i):
@@ -273,8 +279,7 @@ class bmvConvex:
         try:
             dev.set_configuration()
         except:
-            print("Already connected")
-        #print(dev.get_active_configuration())
+            print("Already connected") 
         
 
         cfg = dev.get_active_configuration()
@@ -288,10 +293,7 @@ class bmvConvex:
                 usb.util.endpoint_direction(e.bEndpointAddress) == \
                 usb.util.ENDPOINT_OUT)
 
-        assert self.EPOUT is not None
-        #print(self.EPOUT)
-        # write the data
-        #self.EPOUT.write('te1st')
+        assert self.EPOUT is not None 
 
 
         cfg = dev.get_active_configuration()
@@ -305,11 +307,7 @@ class bmvConvex:
                 usb.util.endpoint_direction(e.bEndpointAddress) == \
                 usb.util.ENDPOINT_IN)
 
-        assert self.EPIN is not None
-        #print(" === EPIN ===")
-        #print(self.EPIN) 
-        #print(" === EPOUT ===")
-        #print(self.EPOUT)         
+        assert self.EPIN is not None        
         self.dev = dev
 
         self.dev.ctrl_transfer(bmRequestType=0xc3,bRequest=176, wValue=0, wIndex= 0, data_or_wLength=  8)
@@ -317,13 +315,15 @@ class bmvConvex:
         self.dev.ctrl_transfer(bmRequestType=0xc3,bRequest=187, wValue=3, wIndex=32, data_or_wLength= 32)
         self.dev.ctrl_transfer(bmRequestType=0xc3,bRequest=187, wValue=3, wIndex=64, data_or_wLength=  8)
         for k in self.payloads.keys():
-            b = self.EPOUT.write(self.payloads[k]) 
+            self.EPOUT.write(self.payloads[k]) 
         self.dev.ctrl_transfer(bmRequestType=0xc3,bRequest=187, wValue=3)
 
-    def read1k(self):
+    def getImages(self,n=1):
+        nReads = self.nL*self.nP*(n+1)
         i = 0
         data = []
-        while i < 1000:
+
+        while i < 2*nReads//4096: # 2 because we're reading 2bytes words
             data.append(self.EPIN.read(4096))
             i += 1
         nData = data.copy()
@@ -333,27 +333,39 @@ class bmvConvex:
         nData = np.array(nData)
         allData = np.concatenate(nData, axis=None)
         self.raw = allData
-        return allData
+
+        return self.createLoop()
+    
 
     def createLoop(self):
+        lenImg = self.nL*self.nP
         newLine = [x[0] for x in np.argwhere(self.raw == np.amax(self.raw))]
-        cntFrame = [x if self.raw[x-1] == 0 else 0 for x in newLine]
-        cntFrame = [self.raw[x+2] for x in newLine]
+        cntFrame = []
+        cntNewFrame = []
+        for x in newLine:
+            if self.raw[x-1] == 0:
+                cntFrame.append(self.raw[x+2]) # compteur de frame
+                cntNewFrame.append(x)
+                #print(x,self.raw[x+2])
         cntImg = []
+        cntnPt = []
         for k in range(len(cntFrame)-1):
             if cntFrame[k] != cntFrame[k+1]:
-                cntImg.append(k)
-        newLine[cntImg[0]],cntImg,newLine[cntImg[-1]]
-
+                cntImg.append(cntFrame[k]) 
+                cntnPt.append(cntNewFrame[k])
+                print(cntFrame[k],cntNewFrame[k])
+        self.cntImg = cntImg
+        self.cntnPt = cntnPt
+        self.newLine = newLine
         self.loop = []
-        i = newLine[cntImg[0]]
-        while i < len(self.raw) - 80*3900:
-            self.loop.append(self.raw[i:i+80*3900].reshape((80, 3900)))
-            i += 80*3900
+        i = self.cntnPt[0]
+        while i < len(self.raw) - lenImg:
+            self.loop.append(self.raw[i:i+lenImg].reshape((self.nL, self.nP)))
+            i += lenImg
         return self.loop
 
 if __name__ == "__main__": 
-    device = HealsonUP20()
+    device = UP20()
     print("Connected to UP20.\nInit...")
     device.InitOn()
     print("Initialize series")
