@@ -9,8 +9,8 @@ The objective for this lib is be able to get images from USB probes easily, unde
 
 ```python
 import pyusbus as usbProbe
-probe = usbProbe.HealsonUP20() 
-frames = probe.getImages(n=50) # should give you a loop of 50 frames
+probe = usbProbe.UP20() 
+frames = probe.getImages(n=10) # should give you a loop of 10 frames
 ```
 
 ## Result
@@ -44,7 +44,8 @@ sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"8613
 
 
 * v0.0.1: Inital release
-  * Initial config. Works for Healson UP20 probe.
+  * Initial config. Works for UP20 probe, yielding enveloppe.
+  * Also added a Convex probe, which yields RF signals.
 
 # Todo
 
