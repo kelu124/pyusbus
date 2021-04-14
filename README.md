@@ -36,7 +36,9 @@ sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"8613
 # Contents
 
 * the `experiments` folder contains .. experiments.
-  * [Initial Jupyter notebook](/experiments/20210325-InitialTest.ipynb)
+  * [Initial Jupyter notebook](/experiments/20210325-UP20L_init.ipynb)
+  * Init Convex
+
 * the `pyusbus` folder contains the python API.
 
 
@@ -46,14 +48,22 @@ sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"8613
 * v0.0.1: Inital release
   * Initial config. Works for UP20 probe, yielding enveloppe.
   * Also added a Convex probe, which yields RF signals.
+  * Adding [Convex pictures of a phantom](/probes/CONV/)
+  * saveImage added to UP20 with correct mm markers
 
 # Todo
 
-* Add the module under pip
-* Improve documentation
-* Explore content of [arrays](/pyusbus/config_arrays.py)
-* Get some images on a phantom
-
+* __High priority__
+  * Explore content of [arrays](/experiments/payloads/) for both UP20 and Convex
+  * Add correct ratios for images
+  * Create gifs from loops
+* __Medium__
+  * Improve documentation
+  * Better get the APIs different options
+  * Get to know the Convex configuration packets
+  * Explore acquisitions timings (packets/lines/frames per sec)
+* __Low__
+  * Add the module under pip
 
 # License
 

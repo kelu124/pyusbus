@@ -8,6 +8,8 @@ import numpy as np
 import json
 import base64
 import struct
+import time 
+import matplotlib.pyplot as plt
 
 from pyusbus.confUP20L import healson_config
 from pyusbus.confCONV  import cvx
@@ -25,9 +27,10 @@ class UP20:
     def __init__(self):
         """Configure the FTDI interface. 
         """ 
-        self.payloads = healson_config
-        for k in self.payloads.keys():
-            self.payloads[k] = base64.b64decode(self.payloads[k][1:-1])
+        self.config = healson_config 
+        self.payloads = {}
+        for k in self.config.keys():
+            self.payloads[k] = base64.b64decode(self.config[k][1:-1] + "========" )
 
         self.ARRAY = b'\x00'
         for k in range(64):
@@ -35,8 +38,7 @@ class UP20:
             
 
         dev = usb.core.find(idVendor=0x04B4, idProduct=0x8613)
-        if not dev: print("No Device")
-
+        if not dev: print("No Device") 
         c = 1
         for config in dev:
             #print('config', c)
@@ -47,6 +49,7 @@ class UP20:
                     dev.detach_kernel_driver(i)
                 #print(i)
             c+=1 
+        dev.reset()
         try:
             dev.set_configuration()
         except:
@@ -54,12 +57,11 @@ class UP20:
 
         self.conf = FX2Config()
         self.device = FX2Device() 
-
         self.InitOn() 
         self.InitSeries10() 
         self.InitArrays()
         self.InitRegisters()
-        print("Probe should be ready")
+        #print("Probe should be ready")
 
     def BulkOut(self,payload):
         # 
@@ -224,24 +226,39 @@ class UP20:
         self.readWrite(b'\x11\x00')
         self.ControlOut(179,0,0,16) # Seems to start: without it, no acqs
 
+
     def getImages(self,n=1):
-        IMG = self.DLImgs(n+1)
+        IMG = self.DLImgs(n)
         NPts =np.shape(IMG)[0]*np.shape(IMG)[1]
         IMG = np.array( IMG, dtype=np.int )
         IMG = IMG.reshape((NPts//160, 160))
         images = []
         for k in range(n):
             images.append(IMG[512*k:512*(k+1)] )
-        return images[1:]
+        self.loop = images
+        return images
+
+    def saveImage(self,n=0):
+        plt.figure(figsize=(8,8))
+        plt.imshow(np.sqrt(np.abs(self.loop[n])),cmap=plt.cm.bone,extent=[0,44.4,50,0],aspect=1)  
+        plt.title("UP20L: Image "+str(n))
+        plt.savefig("up20l_"+str(n)+".jpg")
+        return n
 
     def DLImgs(self,n=1):
         IMG = []
+        timings = []
         self.unfreeze()
-        for k in range(n*40):
+        k = 0
+        while k < n*40:
             tple = struct.unpack( '<2048H', self.device.bulk_read(0x86,4096) ) 
             my_array = np.array( tple, dtype=np.int )
             IMG.append(my_array)
-        self.freeze()
+            timings.append(time.time()) # timings
+            k += 1
+
+        #self.freeze()
+        self.timings = timings
         return IMG
 
 
@@ -254,15 +271,17 @@ class UP20:
 class Convex:
 
     def __init__(self):
-        """Configure the FTDI interface. 
+        """
+        Configure the USB interface 
         """ 
 
         self.nL = 80   #np lines per frame
         self.nP = 3900 #nb pts per line
-
+        self.payloads = None
         self.payloads = cvx.copy()
         for k in self.payloads.keys():
-            self.payloads[k] = base64.b64decode(self.payloads[k][1:-1])          
+            print(self.payloads[k][1:-1])
+            self.payloads[k] = base64.b64decode(self.payloads[k][1:-1] + "========")          
 
         dev = usb.core.find(idVendor=0x04B4, idProduct=0x00f1)
         if not dev: print("No Device")
@@ -309,7 +328,7 @@ class Convex:
 
         assert self.EPIN is not None        
         self.dev = dev
-
+        # Starting the configuration
         self.dev.ctrl_transfer(bmRequestType=0xc3,bRequest=176, wValue=0, wIndex= 0, data_or_wLength=  8)
         self.dev.ctrl_transfer(bmRequestType=0xc3,bRequest=187, wValue=3, wIndex= 0, data_or_wLength= 32)
         self.dev.ctrl_transfer(bmRequestType=0xc3,bRequest=187, wValue=3, wIndex=32, data_or_wLength= 32)
@@ -317,15 +336,18 @@ class Convex:
         for k in self.payloads.keys():
             self.EPOUT.write(self.payloads[k]) 
         self.dev.ctrl_transfer(bmRequestType=0xc3,bRequest=187, wValue=3)
+        # Aaaand it should be configured
+
 
     def getImages(self,n=1):
         nReads = self.nL*self.nP*(n+1)
         i = 0
         data = []
-
+        timings = []
         while i < 2*nReads//4096: # 2 because we're reading 2bytes words
             data.append(self.EPIN.read(4096))
             i += 1
+            timings.append(time.time())
         nData = data.copy()
         for k in range(len(data)):
             PL = bytes(bytearray(data[k]))
@@ -333,7 +355,7 @@ class Convex:
         nData = np.array(nData)
         allData = np.concatenate(nData, axis=None)
         self.raw = allData
-
+        self.timings = timings
         return self.createLoop()
     
 
