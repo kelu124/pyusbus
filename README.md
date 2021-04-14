@@ -15,7 +15,9 @@ frames = probe.getImages(n=10) # should give you a loop of 10 frames
 
 ## Result
 
-![](/experiments/images/first.gif)
+First series on a vein phantom, second on my forearm. Still some work around image compression / dynamic range adjustments.
+ 
+![](/experiments/streamlit/capture.gif)
 
 ## Installation
 
