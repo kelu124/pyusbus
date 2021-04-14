@@ -268,6 +268,11 @@ class UP20:
     def checkAddressFull(self,address): 
         return [x for x in self.BulkOutTwo512(b'\xff'+address)]
 
+
+### Going to the CONVEX
+
+
+
 class Convex:
 
     def __init__(self):

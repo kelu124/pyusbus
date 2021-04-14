@@ -46,7 +46,10 @@ sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"8613
 
 # Changelog
 
-
+* v0.0.2:
+  * Solved an issue with incomplete images with UP20
+  * Adding a streamlit interface - to be improved.
+  * (hopefully) solved a bug with base64.decode leading to incorrect padding. 
 * v0.0.1: Inital release
   * Initial config. Works for UP20 probe, yielding enveloppe.
   * Also added a Convex probe, which yields RF signals.
