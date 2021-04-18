@@ -10,6 +10,7 @@ import base64
 import struct
 import time 
 import matplotlib.pyplot as plt
+import cv2
 
 from pyusbus.confUP20L import healson_config
 from pyusbus.confCONV  import cvx
@@ -21,6 +22,11 @@ def findProbe():
     if usb.core.find(idVendor=0x04B4, idProduct=0x00f1):
         return "CONVEX"
     return "No Device"
+
+def arr2img(arr,x,y): # UP20L : (440, 500)
+    bw = cv2.cvtColor(arr, cv2.COLOR_GRAY2BGR)
+    img = cv2.resize(bw, dsize=(440, 500), interpolation=cv2.INTER_CUBIC)
+    return img
 
 class UP20:
 
