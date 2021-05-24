@@ -33,6 +33,15 @@ Need to work on the documentation here.
 sudo usermod -a -G uucp $USER
 sudo usermod -a -G dialout $USER
 sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"8613\", MODE=\"666\"">/etc/udev/rules.d/99-healson.rules 
+sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"1921\", ATTR{idProduct}==\"0001\", MODE=\"666\"">/etc/udev/rules.d/99-interson.rules 
+sudo udevadm control --reload-rules
+```
+
+To support wireshark checks
+
+```
+sudo modprobe usbmon
+sudo setfacl -m u:$USER:r /dev/usbmon*
 ```
 
 # Contents
@@ -46,6 +55,8 @@ sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"8613
 
 # Changelog
 
+* v0.0.3:
+  * Adding the interson probe. Loads of work remaining
 * v0.0.2:
   * Solved an issue with incomplete images with UP20
   * Adding a streamlit interface - to be improved.

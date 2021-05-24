@@ -14,19 +14,121 @@ import cv2
 
 from pyusbus.confUP20L import healson_config
 from pyusbus.confCONV  import cvx
+from pyusbus.confInterson import lP, lV, initIntReq, initIntVal
 
 def findProbe():
-    dev = usb.core.find(idVendor=0x04B4, idProduct=0x8613)
-    if dev:
+    if usb.core.find(idVendor=0x04B4, idProduct=0x8613):
         return "UP20"
     if usb.core.find(idVendor=0x04B4, idProduct=0x00f1):
         return "CONVEX"
+    if usb.core.find(idVendor=0x1921, idProduct=0x0001):
+        return "Interson, not programmed"
+    if usb.core.find(idVendor=0x1921, idProduct=0xf001):
+        return "Interson, programmed"
     return "No Device"
 
 def arr2img(arr,x,y): # UP20L : (440, 500)
     bw = cv2.cvtColor(arr, cv2.COLOR_GRAY2BGR)
     img = cv2.resize(bw, dsize=(440, 500), interpolation=cv2.INTER_CUBIC)
     return img
+
+
+class Interson:
+
+    def __init__(self):
+        """Configure the FTDI interface. 
+        """ 
+        if    usb.core.find(idVendor=0x1921, idProduct=0x0001):
+            self.progIt()
+            time.sleep(5)
+
+        self.dev = usb.core.find(idVendor=0x1921, idProduct=0xf001)
+        if not self.dev: 
+            print("No Device")
+        else:
+            for config in self.dev:  
+                # The device was getting "Err 16 busy" on my ubuntu
+                for i in range(config.bNumInterfaces):
+                    if self.dev.is_kernel_driver_active(i):
+                        self.dev.detach_kernel_driver(i) 
+            self.dev.reset()
+
+            try:
+                self.dev.set_configuration()
+            except:
+                print("Already connected")
+            self.EP = []
+        
+            for cfg in self.dev:
+                for iface in cfg:
+                    for ep in iface:
+                        ep_dir = usb.util.endpoint_direction(ep.bEndpointAddress)
+                        ep_type = usb.util.endpoint_type(ep.bmAttributes)
+                        self.EP.append(ep)
+                        #print(ep)
+    
+            try:
+                self.dev.ctrl_transfer(bmRequestType=64,bRequest=187, wValue =0x0000)
+                print("Working")
+            except:
+                print("Not working")
+
+    def StartRun(self): # initIntReq, initIntVal
+        for k in range(len(initIntReq)):
+            bmR = int(initIntReq[k])
+            wV = int(initIntVal[k])
+            self.dev.ctrl_transfer(bmRequestType= 64,bRequest= bmR, wValue= wV, 
+                                 wIndex= 0 , data_or_wLength=  "\x00\x00") 
+        print("Starting..")
+        return 1
+
+    def startMotor(self):
+        self.dev.ctrl_transfer(bmRequestType= 64,bRequest= 213, wValue= 0, wIndex= 0 , data_or_wLength=  "\x00\x00") # démarre le moteur
+    def startAcq(self):
+        self.dev.ctrl_transfer(bmRequestType= 64,bRequest= 208, wValue= 0, wIndex= 0 , data_or_wLength=  "\x00\x00") # démarre le moteur
+    def stopMotor(self):
+        self.dev.ctrl_transfer(bmRequestType= 64,bRequest= 214, wValue= 0, wIndex= 0 , data_or_wLength=  "\x00\x00") # démarre le moteur
+    def stopAcq(self):
+        self.dev.ctrl_transfer(bmRequestType= 64,bRequest= 209, wValue= 0, wIndex= 0 , data_or_wLength=  "\x00\x00") # démarre le moteur
+
+
+    def getRawImages(self):
+        dataOdd = []
+        dataEven = []
+        i = 0
+        while i < 24*2048*120//512: # @todo not so glamorous hardcoded values
+            dataOdd.append(self.EP[0].read(0x200))
+            dataEven.append(self.EP[1].read(0x200)) 
+            i += 1
+        self.data = [dataOdd,dataEven]
+        return self.data
+        
+
+    def progIt(self):
+        dev = usb.core.find(idVendor=0x1921, idProduct=0x0001)
+        if not dev: print("No Device")
+
+        for config in dev:  
+            # The device was getting "Err 16 busy" on my ubuntu
+            for i in range(config.bNumInterfaces):
+                if dev.is_kernel_driver_active(i):
+                    dev.detach_kernel_driver(i)
+                #print(i)
+        dev.reset()
+
+        try:
+            dev.set_configuration()
+        except:
+            print("Already connected")
+
+        for k in range(len(lV)): 
+            dev.ctrl_transfer(bmRequestType= 64,bRequest= 160, wValue= lV[k], 
+                                  wIndex= 0 , data_or_wLength=  lP[k])
+
+
+####
+#### Starting the Healson linear probe
+####
 
 class UP20:
 
