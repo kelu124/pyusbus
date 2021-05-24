@@ -33,11 +33,13 @@ Need to work on the documentation here.
 sudo usermod -a -G uucp $USER
 sudo usermod -a -G dialout $USER
 sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"8613\", MODE=\"666\"">/etc/udev/rules.d/99-healson.rules 
+sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"0x00f1\", MODE=\"666\"">/etc/udev/rules.d/99-bmv.rules 
 sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"1921\", ATTR{idProduct}==\"0001\", MODE=\"666\"">/etc/udev/rules.d/99-interson.rules 
+sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"1921\", ATTR{idProduct}==\"f001\", MODE=\"666\"">/etc/udev/rules.d/99-interson-ok.rules 
 sudo udevadm control --reload-rules
 ```
 
-To support wireshark checks
+For further debug, and to support wireshark checks on usbmon:
 
 ```
 sudo modprobe usbmon
