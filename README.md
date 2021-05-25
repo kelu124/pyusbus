@@ -58,7 +58,8 @@ sudo setfacl -m u:$USER:r /dev/usbmon*
 # Changelog
 
 * v0.0.3:
-  * Adding the interson probe. Loads of work remaining
+  * Adding the interson probe. Loads of work remaining: so far getting images, but would be good to have some control over the actual width of the images (variable as of the motor speed). Some [pointers on interson's](https://github.com/KitwareMedical/IntersonManager/blob/master/IntersonManager.cpp) with Kitware, but unsure if that applies to this probe.
+  * Interson: need to be able to read values with control read.
 * v0.0.2:
   * Solved an issue with incomplete images with UP20
   * Adding a streamlit interface - to be improved.
@@ -67,14 +68,13 @@ sudo setfacl -m u:$USER:r /dev/usbmon*
   * Initial config. Works for UP20 probe, yielding enveloppe.
   * Also added a Convex probe, which yields RF signals.
   * Adding [Convex pictures of a phantom](/probes/CONV/)
-  * saveImage added to UP20 with correct mm markers
+  * saveImage added to UP20 with correct distance (mm) markers
 
 # Todo
 
 * __High priority__
-  * Explore content of [arrays](/experiments/payloads/) for both UP20 and Convex
-  * Add correct ratios for images
-  * Create gifs from loops
+  * Explore content of [arrays](/experiments/payloads/) for both UP20 and Convex. Support from users welcome ;)
+  * Add correct ratios for images 
 * __Medium__
   * Improve documentation
   * Better get the APIs different options
