@@ -24,6 +24,9 @@ def findProbe():
     if usb.core.find(idVendor=0x1921, idProduct=0x0001):
         return "Interson, not programmed"
     if usb.core.find(idVendor=0x1921, idProduct=0xf001):
+        # 0xf001 seems to indicate serial, analogdevices?
+        # gnICE+
+        # https://wiki.analog.com/_media/resources/technical-guides/adispi_rev_1p0_customer.pdf
         return "Interson, programmed"
     return "No Device"
 
@@ -34,7 +37,8 @@ def arr2img(arr,x,y): # UP20L : (440, 500)
 
 
 class Interson:
-
+    # https://github.com/KitwareMedical/IntersonManager/blob/master/IntersonManager.cpp
+    # Interesting doc on the registers
     def __init__(self):
         """Configure the FTDI interface. 
         """ 
@@ -90,19 +94,46 @@ class Interson:
         self.dev.ctrl_transfer(bmRequestType= 64,bRequest= 214, wValue= 0, wIndex= 0 , data_or_wLength=  "\x00\x00") # démarre le moteur
     def stopAcq(self):
         self.dev.ctrl_transfer(bmRequestType= 64,bRequest= 209, wValue= 0, wIndex= 0 , data_or_wLength=  "\x00\x00") # démarre le moteur
+    def fastMotor(self):
+        # @todo discover what it does??
+        self.dev.ctrl_transfer(bmRequestType= 64,bRequest= 187, wValue= 0, wIndex= 0 , data_or_wLength=  "\x00\x00") # démarre le moteur
 
 
-    def getRawImages(self):
+    def getRawImages(self,n=1):
         dataOdd = []
         dataEven = []
+        timings = []
         i = 0
-        while i < 24*2048*120//512: # @todo not so glamorous hardcoded values
-            dataOdd.append(self.EP[0].read(0x200))
-            dataEven.append(self.EP[1].read(0x200)) 
+        while i < n*12*20480//4096 : # @todo not so glamorous hardcoded values
+            dataOdd.append(self.EP[1].read(4096))
+            dataEven.append(self.EP[0].read(4096)) 
+            timings.append(time.time())
             i += 1
         self.data = [dataOdd,dataEven]
+        self.timings = [dataOdd,dataEven]
         return self.data
-        
+
+
+    def getImages(self,n=1):
+        self.startMotor() 
+        self.startAcq()
+        self.getUSBImages(n)
+        self.stopAcq()
+        self.stopMotor()
+        return 1
+
+    def getUSBImages(self,n=1):
+        # Using a single channel
+        rawData = []
+        timings = []
+        i = 0
+        while i < n*12*20480//4096 : 
+            rawData.append(self.EP[1].read(4096)) 
+            timings.append(time.time())
+            i += 1
+        self.rawData = rawData
+        self.timings = timings
+        return self.rawData      
 
     def progIt(self):
         dev = usb.core.find(idVendor=0x1921, idProduct=0x0001)
