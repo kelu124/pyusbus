@@ -30,12 +30,13 @@ Need to work on the documentation here.
 ## Ubuntu adjustements
 
 ```
-sudo usermod -a -G uucp $USER
+sudo usermod -a -G   $USER
 sudo usermod -a -G dialout $USER
 sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"8613\", MODE=\"666\"">/etc/udev/rules.d/99-healson.rules 
 sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"0x00f1\", MODE=\"666\"">/etc/udev/rules.d/99-bmv.rules 
 sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"1921\", ATTR{idProduct}==\"0001\", MODE=\"666\"">/etc/udev/rules.d/99-interson.rules 
 sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"1921\", ATTR{idProduct}==\"f001\", MODE=\"666\"">/etc/udev/rules.d/99-interson-ok.rules 
+sudo echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"04B4\", ATTR{idProduct}==\"1003\", MODE=\"666\"">/etc/udev/rules.d/99-doppler.rules 
 sudo udevadm control --reload-rules
 ```
 
@@ -45,6 +46,11 @@ For further debug, and to support wireshark checks on usbmon:
 sudo modprobe usbmon
 sudo setfacl -m u:$USER:r /dev/usbmon*
 ```
+
+Note:
+
+
+
 
 # Contents
 
@@ -56,6 +62,11 @@ sudo setfacl -m u:$USER:r /dev/usbmon*
 
 
 # Changelog
+
+
+* v0.1.0:
+  * Adding the Doppler BMV probe. So far, only B mode. Still, promising.
+  * `Issues with /etc/udev/rules.d for this probe.`
 
 * v0.0.3:
   * Adding the interson probe. Loads of work remaining: so far getting images, but would be good to have some control over the actual width of the images (variable as of the motor speed). Some [pointers on interson's](https://github.com/KitwareMedical/IntersonManager/blob/master/IntersonManager.cpp) with Kitware, but unsure if that applies to this probe.
@@ -69,6 +80,18 @@ sudo setfacl -m u:$USER:r /dev/usbmon*
   * Also added a Convex probe, which yields RF signals.
   * Adding [Convex pictures of a phantom](/probes/CONV/)
   * saveImage added to UP20 with correct distance (mm) markers
+
+# Weird doppler issue
+
+```
+Bus 002 Device 004: ID 04b4:1003 Cypress Semiconductor Corp.
+
+kelu@kelu-e7250:/etc/udev/rules.d$ sudo ls -l /dev/bus/usb/002/004
+crw-rw-r-- 1 root root 189, 131 oct.   2 17:36 /dev/bus/usb/002/004
+
+sudo chmod a+rw /dev/bus/usb/002/004
+
+```
 
 # Todo
 

@@ -15,12 +15,15 @@ import cv2
 from pyusbus.confUP20L import healson_config
 from pyusbus.confCONV  import cvx
 from pyusbus.confInterson import lP, lV, initIntReq, initIntVal
+from pyusbus.confDOPPLER import doppler_config
 
 def findProbe():
     if usb.core.find(idVendor=0x04B4, idProduct=0x8613):
         return "UP20"
     if usb.core.find(idVendor=0x04B4, idProduct=0x00f1):
         return "CONVEX"
+    if usb.core.find(idVendor=0x04B4, idProduct=0x1003):
+        return "Doppler"
     if usb.core.find(idVendor=0x1921, idProduct=0x0001):
         return "Interson, not programmed"
     if usb.core.find(idVendor=0x1921, idProduct=0xf001):
@@ -72,7 +75,7 @@ class Interson:
                         #print(ep)
     
             try:
-                self.dev.ctrl_transfer(bmRequestType=64,bRequest=187, wValue =0x0000)
+                self.dev.ctrl_transfer(bmRequestType=64,bRequest=213, wValue =0x0000)
                 print("Working")
             except:
                 print("Not working")
@@ -519,7 +522,7 @@ class Convex:
             if cntFrame[k] != cntFrame[k+1]:
                 cntImg.append(cntFrame[k]) 
                 cntnPt.append(cntNewFrame[k])
-                print(cntFrame[k],cntNewFrame[k])
+                #print(cntFrame[k],cntNewFrame[k])
         self.cntImg = cntImg
         self.cntnPt = cntnPt
         self.newLine = newLine
@@ -529,6 +532,123 @@ class Convex:
             self.loop.append(self.raw[i:i+lenImg].reshape((self.nL, self.nP)))
             i += lenImg
         return self.loop
+
+
+
+## Doppler now !
+
+class Doppler:
+
+    def __init__(self):
+        """
+        Configure the USB interface 
+        """ 
+
+        self.nL = 128   #np lines per frame
+        self.nP = 3584  #nb pts per line
+        self.payloads = None
+        self.payloads = doppler_config.copy()
+        for k in self.payloads.keys():
+            print(self.payloads[k])
+            self.payloads[k] = base64.b64decode(self.payloads[k])          
+
+        dev = usb.core.find(idVendor=0x04B4, idProduct=0x1003)
+        if not dev: print("No Doppler device detected")
+
+        c = 0
+        for config in dev: 
+            # The device was getting "Err 16 busy" on my ubuntu
+            for i in range(config.bNumInterfaces):
+                if dev.is_kernel_driver_active(i):
+                    dev.detach_kernel_driver(i)
+                print(i)
+            c+=1 
+        dev.reset()
+        try:
+            dev.set_configuration()
+            print("Reset done")
+        except:
+            print("Already connected") 
+        
+
+        cfg = dev.get_active_configuration()
+        intf = cfg[(0,0)]
+
+        EP = []
+        for cfg in dev:
+            for iface in cfg:
+                for ep in iface:
+                    ep_dir = usb.util.endpoint_direction(ep.bEndpointAddress)
+                    ep_type = usb.util.endpoint_type(ep.bmAttributes)
+                    EP.append(ep)
+                    #print(ep)
+
+        self.EP      = EP
+        self.EPOUT   = EP[0]
+        self.EPIN    = EP[-2]
+        self.EPINBis = EP[-1]
+
+
+        self.initProbe()
+        # Aaaand it should be configured
+
+    def initProbe(self):
+        for k in [101, 247, 254, 256, 260, 263, 265, 267, 269, 498, 666]:
+            payload = self.payloads[str(k)]
+            print(len(payload))
+            self.EPOUT.write(payload)  
+
+    def stopAcq(self):
+        payload = self.payloads["8788"]
+        self.EPOUT.write(payload)  
+
+    def startAcq(self):
+        self.initProbe()
+
+
+    def getImages(self,n=1):
+        nReads = 2*self.nL*self.nP*(n+1) # x2 because of length of data
+
+        data = [] 
+        timings = []
+        i = 0
+        while i < nReads//4096: # 2 because we're reading 2bytes words
+            data.append(self.EPIN.read(4096))
+            i+=1
+            timings.append(time.time())
+        nData = data.copy()
+        for k in range(len(data)):
+            PL = bytes(bytearray(data[k]))
+            nData[k] = np.array( struct.unpack( '<'+str(len(PL)//2)+'h', PL ) )
+        nData = np.array(nData)
+        allData = np.concatenate(nData, axis=None)
+        self.raw = allData
+        self.timings = timings
+
+        return 1
+    
+
+    def createLoop(self):
+        lenImg = self.nL*self.nP
+        newLine = [x[0] for x in np.argwhere(self.raw == np.amax(self.raw))]
+        cntFrame = []
+        cntNewFrame = []
+        for x in newLine:
+            if self.raw[x-1] == 0:
+                cntFrame.append(self.raw[x+2]) # compteur de frame
+                if len(cntFrame) >= 2:
+                    #print(cntFrame[-1],self.raw[x+2])
+                    if not (cntFrame[-2] == self.raw[x+2]):
+                        cntNewFrame.append(x) 
+
+        self.loop = []
+        i = cntNewFrame[0]
+        while i < len(self.raw) - 128*3584:
+            self.loop.append(self.raw [i:i+lenImg].reshape((128, 3584)))
+            i += lenImg
+
+        return self.loop
+
 
 if __name__ == "__main__": 
     device = UP20()
