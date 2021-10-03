@@ -65,9 +65,9 @@ Note:
 
 
 * v0.1.0:
-  * Adding the Doppler BMV probe. So far, only B mode. Still, promising.
-  * Issues with `/etc/udev/rules.d for this probe.`
-  * Adding steering doppler. Need to check also if BW or BW+Doppler modes.
+  * Adding the Doppler BMV probe. B-Mode and Doppler modes seem to work.
+  * Issues with `/etc/udev/rules.d for this probe.`. Actually was simple, another rule overrided this device descriptor.
+  * Adding steering doppler data packets.
 
 * v0.0.3:
   * Adding the interson probe. Loads of work remaining: so far getting images, but would be good to have some control over the actual width of the images (variable as of the motor speed). Some [pointers on interson's](https://github.com/KitwareMedical/IntersonManager/blob/master/IntersonManager.cpp) with Kitware, but unsure if that applies to this probe.
@@ -83,21 +83,6 @@ Note:
   * Also added a Convex probe, which yields RF signals.
   * Adding [Convex pictures of a phantom](/probes/CONV/)
   * saveImage added to UP20 with correct distance (mm) markers
-
-# Weird doppler issue
-
-```
-Bus 002 Device 004: ID 04b4:1003 Cypress Semiconductor Corp.
-
-kelu@kelu-e7250:/etc/udev/rules.d$ sudo ls -l /dev/bus/usb/002/004
-crw-rw-r-- 1 root root 189, 131 oct.   2 17:36 /dev/bus/usb/002/004
-
--- When it should real
-crw-rw---T 1 root "dialout" 188, 0 Feb 12 12:01 /dev/ttyUSB0
-
-sudo chmod a+rw /dev/bus/usb/002/004
-
-```
 
 # Todo
 
