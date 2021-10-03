@@ -544,8 +544,12 @@ class Doppler:
         Configure the USB interface 
         """ 
 
-        self.nL = 128   #np lines per frame
-        self.nP = 3584  #nb pts per line
+        self.nL    = 128  #np lines per frame
+        self.nP    = 3584 #nb pts per line
+
+        self.nLDop = 336  # Size of doppler frames
+        self.nPDop = 764  # Size of doppler frames
+
         self.payloads = None
         self.doppler = False
         self.payloads = doppler_config.copy()
@@ -600,6 +604,7 @@ class Doppler:
             payload = self.payloads[k]
             #print(len(payload))
             self.EPOUT.write(payload)  
+        self.doppler = False
         print("Payloads sent")
 
     def stopAcq(self):
@@ -612,13 +617,40 @@ class Doppler:
         self.initProbe()
 
 
+    def startDoppler(self):
+        # This list could/should be optimized
+        ListActionsDoppler = ['254', '256', '260', '263', '265', '267', '_6115', '666', '247', '_6387', '267', '666', '247', '254', '256', '263', '265', '267', '_7835',  '256', '_7839', '263',  '_7843',  '265', '_7847', '_7849', '_7851', '666']
+        for k in ListActionsDoppler:
+            payload = self.payloads[k]
+            self.EPOUT.write(payload) 
+        self.doppler = True
+
+    def getImagesDoppler(self,n=1):
+        nReads = (self.nL*self.nP + self.nLDop * self.nPDop )*(n+1) 
+        data = [] 
+        timings = []
+        i = 0
+        while i < 2*nReads//4096: # 2 because we're reading 2bytes words
+            data.append(self.EPIN.read(4096))
+            i+=1
+            timings.append(time.time())
+        nData = data.copy()
+        for k in range(len(data)):
+            PL = bytes(bytearray(data[k]))
+            nData[k] = np.array( struct.unpack( '<'+str(len(PL)//2)+'h', PL ) )
+        nData = np.array(nData)
+        allData = np.concatenate(nData, axis=None)
+        self.raw = allData
+        self.timings = timings
+        return 1
+
     def getImages(self,n=1):
-        nReads = 2*self.nL*self.nP*(n+1) # x2 because of length of data
+        nReads = (self.nL*self.nP)*(n+1) 
 
         data = [] 
         timings = []
         i = 0
-        while i < nReads//4096: # 2 because we're reading 2bytes words
+        while i < 2*nReads//4096: # 2 because we're reading 2bytes words
             data.append(self.EPIN.read(4096))
             i+=1
             timings.append(time.time())
@@ -633,6 +665,32 @@ class Doppler:
 
         return 1
     
+
+
+        
+    def createLoopDoppler(self):
+        lenImg    = self.nL*self.nP
+        lenImgDop = self.nLDop * self.nPDop
+        newDopp = [x[0] for x in np.argwhere(self.raw == -32333)] 
+        cntNewBnW = [k-64*3584 for k in newDopp if (((k-64*3584)>0) & (k+64*3584)<len(self.raw))]
+        cntNewDop = [k+64*3584 for k in newDopp if ((k+64*3584)<(len(self.raw)-lenImgDop))] 
+        if len(cntNewBnW) > len(cntNewDop):
+            cntNewBnW.pop()
+
+        self.dopplerDta =[]
+        self.dopplerHdr =[]
+        self.loop =[] 
+
+        for d in cntNewDop:
+            data = self.raw[d-1:d-1+lenImgDop]
+            newLine = [x[0] for x in np.argwhere(data == np.amax(data))]
+            self.dopplerDta.append( data.reshape((336, 764)).T[7:] )
+            self.dopplerHdr.append( data.reshape((336, 764)).T[:8] )
+
+        for i in cntNewBnW:
+            self.loop.append(self.raw [i:i+lenImg].reshape((self.nL, self.nP)))
+
+        return 1
 
     def createLoop(self):
         lenImg = self.nL*self.nP

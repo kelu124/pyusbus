@@ -66,15 +66,18 @@ Note:
 
 * v0.1.0:
   * Adding the Doppler BMV probe. So far, only B mode. Still, promising.
-  * `Issues with /etc/udev/rules.d for this probe.`
+  * Issues with `/etc/udev/rules.d for this probe.`
+  * Adding steering doppler. Need to check also if BW or BW+Doppler modes.
 
 * v0.0.3:
   * Adding the interson probe. Loads of work remaining: so far getting images, but would be good to have some control over the actual width of the images (variable as of the motor speed). Some [pointers on interson's](https://github.com/KitwareMedical/IntersonManager/blob/master/IntersonManager.cpp) with Kitware, but unsure if that applies to this probe.
   * Interson: need to be able to read values with control read.
+
 * v0.0.2:
   * Solved an issue with incomplete images with UP20
   * Adding a streamlit interface - to be improved.
   * (hopefully) solved a bug with base64.decode leading to incorrect padding. 
+
 * v0.0.1: Inital release
   * Initial config. Works for UP20 probe, yielding enveloppe.
   * Also added a Convex probe, which yields RF signals.
@@ -88,6 +91,9 @@ Bus 002 Device 004: ID 04b4:1003 Cypress Semiconductor Corp.
 
 kelu@kelu-e7250:/etc/udev/rules.d$ sudo ls -l /dev/bus/usb/002/004
 crw-rw-r-- 1 root root 189, 131 oct.   2 17:36 /dev/bus/usb/002/004
+
+-- When it should real
+crw-rw---T 1 root "dialout" 188, 0 Feb 12 12:01 /dev/ttyUSB0
 
 sudo chmod a+rw /dev/bus/usb/002/004
 
