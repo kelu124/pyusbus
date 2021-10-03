@@ -547,9 +547,10 @@ class Doppler:
         self.nL = 128   #np lines per frame
         self.nP = 3584  #nb pts per line
         self.payloads = None
+        self.doppler = False
         self.payloads = doppler_config.copy()
         for k in self.payloads.keys():
-            print(self.payloads[k])
+            #print(self.payloads[k])
             self.payloads[k] = base64.b64decode(self.payloads[k])          
 
         dev = usb.core.find(idVendor=0x04B4, idProduct=0x1003)
@@ -593,12 +594,17 @@ class Doppler:
         # Aaaand it should be configured
 
     def initProbe(self):
-        for k in [101, 247, 254, 256, 260, 263, 265, 267, 269, 498, 666]:
-            payload = self.payloads[str(k)]
-            print(len(payload))
+        SeqInit = [101, 247, 254, 256, 260, 263, 265, 267, 269, 498, 666]
+        SeqInitStr = [str(x) for x in SeqInit]
+        for k in SeqInitStr:
+            payload = self.payloads[k]
+            #print(len(payload))
             self.EPOUT.write(payload)  
+        print("Payloads sent")
 
     def stopAcq(self):
+        # This freezes all acqs from data EP.
+        # But there's no simple turnaround to restart acqs (?)
         payload = self.payloads["8788"]
         self.EPOUT.write(payload)  
 
