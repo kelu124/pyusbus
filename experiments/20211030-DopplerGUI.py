@@ -128,7 +128,7 @@ class DopplerApp:
 		filename = "{}.".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
 
 		bw,doppler = self.imgBW, self.imgDoppler
-		np.savez("./20211030-npz/"+filename + "npz", bw, doppler)
+		np.savez("./data/20211030-npz/"+filename + "npz", bw, doppler)
 		print("[INFO] saved {}".format(filename+ "npz"))
 
 	def onClose(self):
