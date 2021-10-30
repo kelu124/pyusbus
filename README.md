@@ -1,4 +1,13 @@
-[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/G2G81MT0G)
+![GitHub repo size](https://img.shields.io/github/repo-size/kelu124/pyusbus?style=plastic)
+![GitHub language count](https://img.shields.io/github/languages/count/kelu124/pyusbus?style=plastic)
+![GitHub top language](https://img.shields.io/github/languages/top/kelu124/pyusbus?style=plastic)
+![GitHub last commit](https://img.shields.io/github/last-commit/kelu124/pyusbus?color=red&style=plastic)
+
+[![Patreon](https://img.shields.io/badge/patreon-donate-orange.svg)](https://www.patreon.com/kelu124) 
+[![Kofi](https://badgen.net/badge/icon/kofi?icon=kofi&label)](https://ko-fi.com/G2G81MT0G)
+
+[![Slack](https://badgen.net/badge/icon/slack?icon=slack&label)](https://join.slack.com/t/usdevkit/shared_invite/zt-2g501obl-z53YHyGOOMZjeCXuXzjZow)
+[![made-with-Markdown](https://img.shields.io/badge/Made%20with-Markdown-1f425f.svg)](http://commonmark.org)
 
 
 # pyusbus Readme
@@ -13,11 +22,42 @@ probe = usbProbe.UP20()
 frames = probe.getImages(n=10) # should give you a loop of 10 frames
 ```
 
+It covers today four probes, including a mechanical one (interson), one convex, one linear bw, one linear doppler.
+
+Not all features are identified / found back, as a work in progress, feel free to contribute or drop me a line if you want to explore a model.
+
 ## Result
 
 First series on a vein phantom, second on my forearm. Still some work around image compression / dynamic range adjustments.
  
 ![](/experiments/streamlit/capture.gif)
+
+## Covered probes
+
+So far, we do cover four probes.
+
+```python
+probe = usbProbe.Interson() 
+probe = usbProbe.CONV() 
+probe = usbProbe.UP20() 
+probe = usbProbe.DOPPLER() 
+```
+
+### Interson probe
+
+![](probes/Interson/index.jpg)
+
+### BMV Convex 
+
+![](probes/CONV/index.jpg)
+
+### Linear HP20L
+
+![](probes/UP20L/index.png)
+
+### BMV Doppler linear
+
+![](probes/Doppler/index.jpg)
 
 ## Installation
 
@@ -63,6 +103,9 @@ Note:
 
 # Changelog
 
+* v0.1.1:
+  * Bug on doppler acquisitions, empty frames broke acquisitons
+  * Adding tkinter tests for [doppler](experiments/20211030-DopplerGUI.py)
 
 * v0.1.0:
   * Adding the Doppler BMV probe. B-Mode and Doppler modes seem to work.
