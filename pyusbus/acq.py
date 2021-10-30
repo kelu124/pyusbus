@@ -688,8 +688,10 @@ class Doppler:
             self.dopplerHdr.append( data.reshape((336, 764)).T[:8] )
 
         for i in cntNewBnW:
-            self.loop.append(self.raw [i:i+lenImg].reshape((self.nL, self.nP)))
-
+            try:
+                self.loop.append(self.raw [i:i+lenImg].reshape((self.nL, self.nP)))
+            except:
+                return -1
         return 1
 
     def createLoop(self):
