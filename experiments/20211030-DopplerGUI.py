@@ -44,6 +44,11 @@ class DopplerApp:
 		self.imgDoppler = None
 		# create a button, that when pressed, will take the current
 		# frame and save it to file
+
+		btnFreeze = tki.Button(self.root, text="Freeze", command=self.Freeze)
+		btnFreeze.pack(side="bottom", fill="both", expand="yes", padx=10, pady=10)
+
+
 		btn = tki.Button(self.root, text="Capture", command=self.takeSnapshot)
 		btn.pack(side="bottom", fill="both", expand="yes", padx=10, pady=10)
 		self.display_text = tki.StringVar()
@@ -51,7 +56,7 @@ class DopplerApp:
 		# start a thread that constantly pools the video sensor for
 		# the most recently read frame
 		self.stopEvent = threading.Event()
-		self.thread = threading.Thread(target=self.dopplerLoop, args=())
+		self.thread = threading.Thread(target=self.bwLoop, args=())
 		self.thread.start()
 		# set a callback to handle when the window is closed
 		self.root.wm_title("Doppler")
@@ -120,15 +125,26 @@ class DopplerApp:
 
 		except RuntimeError:
 			print("[INFO] caught a RuntimeError")
-			
+	def Freeze(self):
+		if not self.stopEvent.is_set():
+			self.stopEvent.set() 
+			print("Freeze")
+		else:
+			self.stopEvent.clear() 
+			print("Unfreeze")
+			self.thread = threading.Thread(target=self.bwLoop, args=())
+			self.thread.start()
+		return 1			
 	def takeSnapshot(self):
 		# grab the current timestamp and use it to construct the
 		# output path
 		ts = datetime.datetime.now()
 		filename = "{}.".format(ts.strftime("%Y-%m-%d_%H-%M-%S"))
 
-		bw,doppler = self.imgBW, self.imgDoppler
-		np.savez("./data/20211030-npz/"+filename + "npz", bw, doppler)
+		#bw,doppler = self.imgBW, self.imgDoppler
+		#np.savez("./data/20211030-npz/"+filename + "npz", bw, doppler)
+		np.savez("./data/20211030-npz/bw"+filename + "npz", self.probe.loop)
+		
 		print("[INFO] saved {}".format(filename+ "npz"))
 
 	def onClose(self):
@@ -145,7 +161,7 @@ class DopplerApp:
 				while not self.stopEvent.is_set():
 					# grab the frame from the video stream and resize it to
 					# have a maximum width of 300 pixels
-					self.probe.getImages(n=1)
+					self.probe.getImages(n=10)
 					IMG = self.probe.createLoop()
 					img = (np.sqrt(np.abs(self.probe.loop[0])).T[7:])
 					img = 255*(img/np.max(img))
