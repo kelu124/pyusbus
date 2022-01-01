@@ -1,0 +1,102 @@
+
+# Probes: Convex
+
+## What
+
+```
+dev = usb.core.find(idVendor=0x04B4, idProduct=0x00f1)
+self.nL = 80   #np lines per frame
+self.nP = 3900 #nb pts per line
+```
+
+## Descriptor
+
+```
+config 0
+Interfaces 1
+0
+  CONFIGURATION 1: 100 mA ==================================
+   bLength              :    0x9 (9 bytes)
+   bDescriptorType      :    0x2 Configuration
+   wTotalLength         :   0x3c (60 bytes)
+   bNumInterfaces       :    0x1
+   bConfigurationValue  :    0x1
+   iConfiguration       :    0x0 
+   bmAttributes         :   0x80 Bus Powered
+   bMaxPower            :   0x32 (100 mA)
+    INTERFACE 0: Vendor Specific ===========================
+     bLength            :    0x9 (9 bytes)
+     bDescriptorType    :    0x4 Interface
+     bInterfaceNumber   :    0x0
+     bAlternateSetting  :    0x0
+     bNumEndpoints      :    0x6
+     bInterfaceClass    :   0xff Vendor Specific
+     bInterfaceSubClass :    0x0
+     bInterfaceProtocol :    0x0
+     iInterface         :    0x0 
+      ENDPOINT 0x1: Bulk OUT ===============================
+       bLength          :    0x7 (7 bytes)
+       bDescriptorType  :    0x5 Endpoint
+       bEndpointAddress :    0x1 OUT
+       bmAttributes     :    0x2 Bulk
+       wMaxPacketSize   :  0x200 (512 bytes)
+       bInterval        :    0x0
+      ENDPOINT 0x81: Bulk IN ===============================
+       bLength          :    0x7 (7 bytes)
+       bDescriptorType  :    0x5 Endpoint
+       bEndpointAddress :   0x81 IN
+       bmAttributes     :    0x2 Bulk
+       wMaxPacketSize   :  0x200 (512 bytes)
+       bInterval        :    0x0
+      ENDPOINT 0x2: Bulk OUT ===============================
+       bLength          :    0x7 (7 bytes)
+       bDescriptorType  :    0x5 Endpoint
+       bEndpointAddress :    0x2 OUT
+       bmAttributes     :    0x2 Bulk
+       wMaxPacketSize   :  0x200 (512 bytes)
+       bInterval        :    0x0
+      ENDPOINT 0x82: Bulk IN ===============================
+       bLength          :    0x7 (7 bytes)
+       bDescriptorType  :    0x5 Endpoint
+       bEndpointAddress :   0x82 IN
+       bmAttributes     :    0x2 Bulk
+       wMaxPacketSize   :  0x200 (512 bytes)
+       bInterval        :    0x0
+      ENDPOINT 0x3: Bulk OUT ===============================
+       bLength          :    0x7 (7 bytes)
+       bDescriptorType  :    0x5 Endpoint
+       bEndpointAddress :    0x3 OUT
+       bmAttributes     :    0x2 Bulk
+       wMaxPacketSize   :  0x200 (512 bytes)
+       bInterval        :    0x0
+      ENDPOINT 0x83: Bulk IN ===============================
+       bLength          :    0x7 (7 bytes)
+       bDescriptorType  :    0x5 Endpoint
+       bEndpointAddress :   0x83 IN
+       bmAttributes     :    0x2 Bulk
+       wMaxPacketSize   :  0x200 (512 bytes)
+       bInterval        :    0x0
+      ENDPOINT 0x1: Bulk OUT ===============================
+       bLength          :    0x7 (7 bytes)
+       bDescriptorType  :    0x5 Endpoint
+       bEndpointAddress :    0x1 OUT
+       bmAttributes     :    0x2 Bulk
+       wMaxPacketSize   :  0x200 (512 bytes)
+       bInterval        :    0x0
+ === EPIN ===
+      ENDPOINT 0x81: Bulk IN ===============================
+       bLength          :    0x7 (7 bytes)
+       bDescriptorType  :    0x5 Endpoint
+       bEndpointAddress :   0x81 IN
+       bmAttributes     :    0x2 Bulk
+       wMaxPacketSize   :  0x200 (512 bytes)
+       bInterval        :    0x0
+ === EPOUT ===
+      ENDPOINT 0x1: Bulk OUT ===============================
+       bLength          :    0x7 (7 bytes)
+       bDescriptorType  :    0x5 Endpoint
+       bEndpointAddress :    0x1 OUT
+       bmAttributes     :    0x2 Bulk
+       wMaxPacketSize   :  0x200 (512 bytes)
+       bInterval        :    0x0
+```
