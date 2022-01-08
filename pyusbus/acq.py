@@ -427,7 +427,7 @@ class Convex:
         self.payloads = None
         self.payloads = cvx.copy()
         for k in self.payloads.keys():
-            print(self.payloads[k][1:-1])
+            #print(self.payloads[k][1:-1])
             self.payloads[k] = base64.b64decode(self.payloads[k][1:-1] + "========")          
 
         dev = usb.core.find(idVendor=0x04B4, idProduct=0x00f1)
