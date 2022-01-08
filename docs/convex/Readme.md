@@ -191,3 +191,26 @@ Sequences:
  'Seq1.6',
  'Seq1.7',
  ```
+
+
+## All
+
+####  ./onoff.pcapng.parquet 
+
+['Init1', 'Init2', 'Init3', 'Init4', 'Init5', 'Init6', 'Seq1.3', 'Seq1.4bis', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'TGC-related-TBC-StartMaybe', 'PreInitBoot1', 'PreInitBoot2', 'Init2', 'PreInitBoot3', 'PreInitBoot4', 'Seq1.1', 'Seq1.2', 'Seq1.3', 'Seq1.4', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Seq1.1', 'Seq1.2', 'Seq1.3', 'Seq1.4', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Seq1.1', 'Seq1.2', 'Seq1.3', 'Seq1.4', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'StopAcq-TBC']
+
+####  ./diff_tgc2.pcapng.parquet 
+
+['TGC-related-TBC-StartMaybe', 'StopAcq-TBC']
+
+####  ./diff_tgc.pcapng.parquet 
+
+['TGC-related-TBC-StartMaybe', 'StopAcq-TBC']
+
+####  ./diff_gains.pcapng.parquet 
+
+['TGC-related-TBC-StartMaybe', 'StopAcq-TBC']
+
+####  ./diff_depth.pcapng.parquet 
+
+['TGC-related-TBC-StartMaybe', 'Depth1', 'ConfirmDepth1.1', 'Seq1.3', 'ConfirmDepth1.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth1', 'ConfirmDepth1.1', 'Seq1.3', 'ConfirmDepth1.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth2', 'ConfirmDepth1.1', 'Seq1.3', 'ConfirmDepth1.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth2', 'ConfirmDepth1.1', 'Seq1.3', 'ConfirmDepth1.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth3', 'ConfirmDepth2.1', 'Seq1.3', 'ConfirmDepth2.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth3', 'ConfirmDepth2.1', 'Seq1.3', 'ConfirmDepth2.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth4', 'ConfirmDepth1.3', 'Seq1.3', 'ConfirmDepth1.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth4', 'ConfirmDepth1.3', 'Seq1.3', 'ConfirmDepth1.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth2', 'ConfirmDepth1.1', 'Seq1.3', 'ConfirmDepth1.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth2', 'ConfirmDepth1.1', 'Seq1.3', 'ConfirmDepth1.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth1', 'ConfirmDepth1.1', 'Seq1.3', 'ConfirmDepth1.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth1', 'ConfirmDepth1.1', 'Seq1.3', 'ConfirmDepth1.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth0', 'ConfirmDepth1.1', 'Seq1.3', 'ConfirmDepth1.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth0', 'ConfirmDepth1.1', 'Seq1.3', 'ConfirmDepth1.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Seq1.1', 'Seq1.2', 'Seq1.3', 'Seq1.4', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Seq1.1', 'Seq1.2', 'Seq1.3', 'Seq1.4', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth5', 'ConfirmDepth5.1', 'Seq1.3', 'ConfirmDepth5.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'Depth5', 'ConfirmDepth5.1', 'Seq1.3', 'ConfirmDepth5.2', 'Seq1.5', 'Seq1.6', 'Seq1.7', 'StopAcq-TBC']

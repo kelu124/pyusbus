@@ -6,6 +6,7 @@ import array
 import json 
 import pprint
 import hashlib
+import base64 
 
 def tagDF(df,source):
     dictKeys = loadJson()
@@ -22,9 +23,12 @@ def tagDF(df,source):
     df.loc[((df.bmReqTyp == 0xC3) & (df.Req == 187) & (df.wV == 3) & (df.wI == 64)),"verbose"] = "SetupStep4"
     df.TypeP = df.TypeP.astype(str)
     df["sig"] = np.nan
+    df["basePL"] = np.nan
     df["source"] = source
+    df.loc[~df.payload.isna(),"basePL"] =  df.loc[~df.payload.isna(),"payload"].apply(lambda x: str(base64.b64encode(x)))
     df.loc[~df.payload.isna(),"sig"] =  df.loc[~df.payload.isna(),"payload"].apply(lambda x: signPacket(x))
-    #df.loc[~df.payload.isna(),"lst"] =  df.loc[~df.payload.isna(),"payload"].apply(lambda x: bin2array(x))
+    #str(base64.b64encode(PL163))
+    # #df.loc[~df.payload.isna(),"lst"] =  df.loc[~df.payload.isna(),"payload"].apply(lambda x: bin2array(x))
     for keyZ in dictKeys.keys():
         #print(keyZ, dictKeys[keyZ]["desc"])
         df.loc[df.sig == keyZ,"verbose"] = dictKeys[keyZ]["desc"]
@@ -49,12 +53,12 @@ def updateJson(DF,dictKeys):
     for i, row in DF.iterrows():
         #print(row.sig)
         if row.sig not in dictKeys.keys():
-            dictKeys[row.sig] = {"source": row.source, "packet": row.ID, "desc": row.verbose}
+            dictKeys[row.sig] = {"source": row.source, "packet": row.ID, "desc": row.verbose, "payload":row.basePL[2:-1]}
     saveJson(dictKeys)
     return dictKeys
 
 def saveJson(data,fileName='CONVEX.json'):
-    pretty_print_json = pprint.pformat(data).replace("'", '"')
+    pretty_print_json = pprint.pformat(data).replace("'",'"')
     with open(fileName, 'w') as f:
         f.write(pretty_print_json)  
 
