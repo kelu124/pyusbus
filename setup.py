@@ -22,7 +22,7 @@ setup(
   download_url = 'https://github.com/kelu124/pyusbus/',    # I explain this later on
   keywords = ['ultrasound', 'usb'],   # Keywords that define your package best
   install_requires=[            # I get to this in a second
-          'fx2','usb','matplotlib','numpy'
+          'fx2','pyusb','opencv-python','usb','matplotlib','numpy'
           ],
   classifiers=[
     'Development Status :: 3 - Alpha',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package
